@@ -9,11 +9,35 @@ on:
       - '*'    # Trigger for any tag push
 
 jobs:
-  create_release:
-    name: Create Release
+  build_and_release:
+    name: Build and Create Release
     runs-on: windows-latest
+
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          # If your project requires .NET 10, change this to '10.x'
+          dotnet-version: '10.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore Sotaj.sln
+
+      - name: Publish Self-contained Single-file (win-x64)
+        run: |
+          dotnet publish Sotaj/Sotaj.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./artifacts
+
+      - name: Package artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release
+          Compress-Archive -Path artifacts/* -DestinationPath release/Sotaj-win-x64.zip -Force
+
       - name: Create GitHub Release
+        id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: ${{ github.ref_name }}
@@ -24,3 +48,11 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release/Sotaj-win-x64.zip
+          asset_name: Sotaj-win-x64.zip
+          asset_content_type: application/zip
