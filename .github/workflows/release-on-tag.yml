@@ -1,4 +1,4 @@
-﻿name: Create Release on Tag
+﻿name: Release Build
 
 permissions:
   contents: write
@@ -6,11 +6,11 @@ permissions:
 on:
   push:
     tags:
-      - '*'    # Trigger for any tag push
+      - 'v*.*.*'
 
 jobs:
-  build_and_release:
-    name: Build and Create Release
+  build-windows:
+    name: Build Windows and Create Installer
     runs-on: windows-latest
 
     steps:
@@ -20,28 +20,58 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          # If your project requires .NET 10, change this to '10.x'
           dotnet-version: '10.x'
 
-      - name: Restore NuGet packages
+      - name: Restore dependencies
         run: dotnet restore Sotaj.sln
 
-      - name: Publish Self-contained Single-file (win-x64)
-        run: |
-          dotnet publish Sotaj/Sotaj.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./artifacts
+      - name: Build
+        run: dotnet build Sotaj/Sotaj.csproj -c Release --no-restore
 
-      - name: Package artifacts
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Publish (self-contained single-file for win-x64)
+        run: |
+          dotnet publish Sotaj/Sotaj.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ./publish
+
+      - name: Ensure exe is named Satoj.exe
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path release
-          Compress-Archive -Path artifacts/* -DestinationPath release/Sotaj-win-x64.zip -Force
+          $exe = Get-ChildItem -Path ./publish -Filter *.exe | Select-Object -First 1
+          if ($null -eq $exe) { Write-Host 'No exe found in publish folder'; exit 1 }
+          if ($exe.Name -ne 'Satoj.exe') {
+            Rename-Item -Path $exe.FullName -NewName 'Satoj.exe' -Force
+          }
 
-      - name: Create GitHub Release and upload asset
+      - name: Install Velopack (dotnet tool)
+        run: dotnet tool install -g vpk
+
+      - name: Add dotnet tools to PATH
+        shell: pwsh
+        run: |
+          $toolsPath = "$env:USERPROFILE\.dotnet\tools"
+          Add-Content -Path $env:GITHUB_PATH -Value $toolsPath
+
+      - name: Create Velopack installer
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          mkdir -Force Releases
+          $owner = "${{ github.repository_owner }}"
+          $exeName = "Satoj.exe"
+          $icon = "Sotaj/Assets/Satoj.png"
+          vpk pack -u $owner -v $env:VERSION -p ./publish -e $exeName -o ./Releases --icon $icon
+
+      - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
-          files: release/Sotaj-win-x64.zip
+          files: |
+            Releases/*
         env:
-          # Use an optional PERSONAL_TOKEN secret if present (for forks/org restrictions); otherwise fall back to GITHUB_TOKEN
           GITHUB_TOKEN: ${{ secrets.PERSONAL_TOKEN || secrets.GITHUB_TOKEN }}

@@ -1,7 +1,29 @@
+# IDEs
 .idea/
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.sln.iml
+_ReSharper*/
+*.DotSettings.user
 
+# Build output
 bin/
-
 obj/
+**/bin/
+**/obj/
 
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Project-specific
 config/

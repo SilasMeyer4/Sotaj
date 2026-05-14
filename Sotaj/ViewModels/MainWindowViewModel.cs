@@ -10,11 +10,15 @@ using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Sotaj.Services;
+using Velopack;
 
 namespace Sotaj.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
+    private readonly Updater  _updater = new Updater();
+    
     [ObservableProperty] private string? _hotKeyString;
 
     [ObservableProperty] private string? _pasteString;
@@ -204,5 +208,16 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             AhkExePath = JsonSerializer.Deserialize<string>(File.ReadAllText(path));
         }
+    }
+
+    public async Task<UpdateInfo?> CheckForUpdates()
+    {
+        var updateInfo = await _updater.CheckForUpdatesAsync();
+        return updateInfo;
+    }
+
+    public async Task DownloadAndInstallUpdateAsync(UpdateInfo updateInfo)
+    {
+        await _updater.DownloadAndInstallUpdateAsync(updateInfo);
     }
 }
