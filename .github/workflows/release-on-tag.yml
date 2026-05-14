@@ -66,7 +66,8 @@ jobs:
           # exe name inside publish folder (adjust if different)
           $exeName = "Sotaj.exe"
           # icon (optional) - keep if present in repo
-          $icon = "Sotaj/Assets/Sotaj.ico"
+          $icon = "./Sotaj/Assets/Sotaj.ico"
+          if (-not (Test-Path $icon)) { Write-Host "Icon not found at $icon"; exit 1 }
           # call vpk (Velopack) to create installer
           vpk pack -u $packageId -v $env:VERSION -p ./publish -e $exeName -o ./Releases --icon $icon
           # ensure version is included in installer file names
