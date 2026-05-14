@@ -9,7 +9,7 @@ namespace Sotaj.Services;
 public class Updater
 {
     private readonly UpdateManager _updateManager;
-    private readonly string _repoUrl = "https://github.com/SilasMeyer4/Satoj";
+    private readonly string _repoUrl = "https://github.com/SilasMeyer4/Sotaj";
 
     public Updater()
     {

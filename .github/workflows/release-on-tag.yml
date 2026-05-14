@@ -61,14 +61,14 @@ jobs:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
           mkdir -Force Releases
-          # -u : user/organization name -> use repository owner
-          $owner = "${{ github.repository_owner }}"
+          # -u : update URL -> use full repo URL for GitHub
+          $repoUrl = "https://github.com/${{ github.repository }}"
           # exe name inside publish folder (adjust if different)
           $exeName = "Sotaj.exe"
           # icon (optional) - keep if present in repo
           $icon = "Sotaj/Assets/Sotaj.ico"
           # call vpk (Velopack) to create installer
-          vpk pack -u $owner -v $env:VERSION -p ./publish -e $exeName -o ./Releases --icon $icon
+          vpk pack -u $repoUrl -v $env:VERSION -p ./publish -e $exeName -o ./Releases --icon $icon
 
       - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v1
