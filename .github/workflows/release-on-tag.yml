@@ -61,14 +61,21 @@ jobs:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
           mkdir -Force Releases
-          # -u : update URL -> use full repo URL for GitHub
-          $repoUrl = "https://github.com/${{ github.repository }}"
+          # -u expects a NuGet package id (alphanumeric/dash/underscore/dot)
+          $packageId = "Sotaj"
           # exe name inside publish folder (adjust if different)
           $exeName = "Sotaj.exe"
           # icon (optional) - keep if present in repo
           $icon = "Sotaj/Assets/Sotaj.ico"
           # call vpk (Velopack) to create installer
-          vpk pack -u $repoUrl -v $env:VERSION -p ./publish -e $exeName -o ./Releases --icon $icon
+          vpk pack -u $packageId -v $env:VERSION -p ./publish -e $exeName -o ./Releases --icon $icon
+          # ensure version is included in installer file names
+          Get-ChildItem -Path ./Releases -Filter *.exe | ForEach-Object {
+            if ($_.Name -notmatch [regex]::Escape($env:VERSION)) {
+              $newName = $_.Name.Replace("-setup", "-$env:VERSION-win-setup")
+              Rename-Item -Path $_.FullName -NewName $newName -Force
+            }
+          }
 
       - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v1
