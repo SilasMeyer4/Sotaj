@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Sotaj.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Sotaj.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Sotaj"
+        KeyDown="InputElement_OnKeyDown"
+        Width="1280"
+        Height="720"
+        Loaded="Control_OnLoaded">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+    <Grid>
+        <TabControl SelectedIndex="{Binding TabIndex, Mode=TwoWay}">
+            <TabItem Header="Create">
+                <Grid RowDefinitions="Auto, Auto, *, Auto" RowSpacing="15" Margin="20">
+                    <Label Content="Select Shortcut"/>
+                    <TextBlock Grid.Row="1" Text="{Binding HotKeyString }"/>
+                    <TextBox Grid.Row="2" Text="{Binding PasteString}"/>
+                    <Grid Grid.Row="3" ColumnDefinitions="*, Auto, Auto" ColumnSpacing="15">
+                        <TextBox Grid.Column="0" Text="{Binding FileName}"/>
+                        <Button Grid.Column="1" Command="{Binding WriteHotKeyScriptCommand}" Content="Write Script"/>
+                    </Grid>
+     
+                </Grid>
+            </TabItem>
+            
+            <TabItem Header="Manage">
+                <Grid ColumnDefinitions="Auto, *">
+                    <ListBox Grid.Column="0" Width="400" ItemsSource="{Binding FileNames}"/>
+                    
+                    <Grid Grid.Column="1" RowDefinitions="Auto, *">
+                        <Grid Grid.Row="0"  ColumnDefinitions="*, Auto">
+                            <TextBox Grid.Column="0" Text="{Binding AhkExePath}" IsReadOnly="True"/>
+                            <Button Grid.Column="1" Click="Button_OnClick" Content="Select AutoHotKey Exe"/>
+                        </Grid>
+                 
+                        <Button Grid.Row="1" Content="Run Script" Command="{Binding RunScriptCommand}"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+    
+  
+
+</Window>
