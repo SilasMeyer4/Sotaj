@@ -42,8 +42,8 @@ jobs:
         run: |
           $exe = Get-ChildItem -Path ./publish -Filter *.exe | Select-Object -First 1
           if ($null -eq $exe) { Write-Host 'No exe found in publish folder'; exit 1 }
-          if ($exe.Name -ne 'Satoj.exe') {
-            Rename-Item -Path $exe.FullName -NewName 'Satoj.exe' -Force
+          if ($exe.Name -ne 'Sotaj.exe') {
+            Rename-Item -Path $exe.FullName -NewName 'Sotaj.exe' -Force
           }
 
       - name: Install Velopack (dotnet tool)
@@ -66,7 +66,7 @@ jobs:
           # exe name inside publish folder (adjust if different)
           $exeName = "Sotaj.exe"
           # icon (optional) - keep if present in repo
-          $icon = "Sotaj/Assets/Sotaj.ico"
+          $icon = "Sotaj/Assets/Sotaj.png"
           # call vpk (Velopack) to create installer
           vpk pack -u $owner -v $env:VERSION -p ./publish -e $exeName -o ./Releases --icon $icon
 
